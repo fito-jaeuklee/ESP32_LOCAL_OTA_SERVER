@@ -25,9 +25,9 @@ import glob
 import logging
 import ssl
 import http.server
-
-FIRMWARE_DIRECTORY = os.environ['HOME'] + os.sep + "esp32"
-print(FIRMWARE_DIRECTORY)
+#
+# FIRMWARE_DIRECTORY = os.environ['HOME'] + os.sep + "esp32"
+# print(FIRMWARE_DIRECTORY)
 
 
 class HttpHandler(http.server.BaseHTTPRequestHandler):
@@ -88,7 +88,7 @@ def parseArgs():
     parser = argparse.ArgumentParser(
         description='HTTP Server which delivers firmware binaries for Arduino OTA updates.')
     parser.add_argument('--dir', help='Directory containing the firmware binaries to serve. Default: ~/firmware',
-                        default=os.environ['HOME'] + os.sep + "firmware")
+                        default='' + os.sep + "firmware")
     parser.add_argument('--port', help='Server port. Default: 8000.', default=8070)
     parser.add_argument('--log', help='Log level. Default ERROR', default='INFO')
     parser.add_argument('--cert', help='SSL cert file to enable HTTPS. Default empty=No HTTPS', default=None)
