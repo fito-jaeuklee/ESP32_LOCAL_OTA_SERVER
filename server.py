@@ -25,12 +25,16 @@ import glob
 import logging
 import ssl
 import http.server
+from tkinter import filedialog
 #
 # FIRMWARE_DIRECTORY = os.environ['HOME'] + os.sep + "esp32"
 # print(FIRMWARE_DIRECTORY)
 
 
+
+
 class HttpHandler(http.server.BaseHTTPRequestHandler):
+    cell_cnt = 0
 
     def getLatestFirmwareVersion(self, flavor):
         for firmware in os.listdir(FIRMWARE_DIRECTORY):
@@ -70,6 +74,7 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         #     return
 
         print("flavor = ", flavor)
+
         latest = self.getLatestFirmwareVersion(flavor)
         firmware_version = 0.0
         print(latest, firmware_version)
@@ -77,6 +82,8 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
             logging.info('Sending firmware update for ' + str(flavor) + ' from ' + str(firmware_version) + ' to ' + str(
                 latest) + '.', extra=log_stat)
             self.buildStreamResponse(flavor, '')
+            self.cell_cnt = self.cell_cnt + 1
+            # print("Cell count = ", self.cell_cnt)
             return
         else:
             logging.debug('No update available', extra=log_stat)
@@ -102,6 +109,9 @@ if __name__ == '__main__':
         FIRMWARE_DIRECTORY = args.dir
 
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(ip)s --- %(message)s', level=args.log)
+
+    FIRMWARE_DIRECTORY = filedialog.askdirectory()
+    print(FIRMWARE_DIRECTORY)
 
     try:
         server = http.server.HTTPServer(('', args.port), HttpHandler)
