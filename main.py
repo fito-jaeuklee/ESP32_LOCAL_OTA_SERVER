@@ -5,6 +5,7 @@ import platform
 import subprocess
 import server as ota
 import cell_on_off_control as cell_on_off
+import sys, os
 import socket
 
 
@@ -12,9 +13,29 @@ def check_wifi_ssid_ip_setting():
     try:
         print(platform.system())
         if platform.system() == "Windows":
-            command = "netsh wlan show networks interface=Wi-Fi"
-        elif platform.system() == "Linux":
-            command = "nmcli dev wifi list"
+            process = subprocess.Popen(
+                ['Netsh', 'WLAN', 'show', "interfaces"],
+                stdout=subprocess.PIPE)
+            out, err = process.communicate()
+            process.wait()
+            print(out)
+            if "OHCOACH" in str(out):
+                print("SSID OK")
+            else:
+                print("Connect to right WiFi -> OHCOACHxxxx")
+                raise Exception("Connect to right WiFi -> OHCOACHxxxx")
+
+            process2 = subprocess.Popen(['ipconfig'], stdout=subprocess.PIPE)
+            out2, err2 = process2.communicate()
+            process2.wait()
+            print(out2)
+
+            if "192.168.1.254" in str(out2):
+                print("IP set to 192.168.1.254")
+            else:
+                print("Check your ip setting")
+                raise Exception("Check your ip setting")
+
         elif platform.system() == "Darwin":
             process = subprocess.Popen(
                 ['/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport', '-I'],
@@ -28,17 +49,17 @@ def check_wifi_ssid_ip_setting():
                 print("Connect to right WiFi -> OHCOACHxxxx")
                 raise Exception("Connect to right WiFi -> OHCOACHxxxx")
 
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        print(s.getsockname()[0])
-        ip = s.getsockname()[0]
-        s.close()
+            process2 = subprocess.Popen(['ifconfig'], stdout=subprocess.PIPE)
+            out2, err2 = process2.communicate()
+            process2.wait()
+            print(out2)
 
-        if '192.168.1.254' in ip:
-            print("IP set to 192.168.1.254")
-        else:
-            print("Check your ip setting")
-            raise Exception("Check your ip setting")
+            if "192.168.1.254" in str(out2):
+                print("IP set to 192.168.1.254")
+            else:
+                print("Check your ip setting")
+                raise Exception("Check your ip setting")
+
     except:
         print("Error happened close window after 10secs")
         time.sleep(10)
@@ -51,8 +72,8 @@ def cell_entered_ota():
         print("Start cell %d OTA update !" % i)
         cell_port = cell_ctr.main(i)
         print(cell_port)
-        time.sleep(110)
-        print("ota success / fail flag = ", ota.OTA_flag)
+        time.sleep(30)
+        print("cell number / ota flag = ", i, ota.OTA_flag)
 
         ota.save_ota_done(0)
 
@@ -60,7 +81,13 @@ def cell_entered_ota():
 # TODO:
 if __name__ == '__main__':
     check_wifi_ssid_ip_setting()
-    path = filedialog.askdirectory()
+
+    if getattr(sys, 'frozen', False):
+        program_directory = os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        program_directory = os.path.dirname(os.path.abspath(__file__))
+    # path = filedialog.askdirectory()
+    path = program_directory
     print(path)
     ota_thread = threading.Thread(target=ota.ota_server_open, args=[path])
 

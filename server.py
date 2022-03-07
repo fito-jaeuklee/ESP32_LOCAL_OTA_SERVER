@@ -95,13 +95,15 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         firmware_version = 0.0
         print(latest, firmware_version)
         if float(latest) > float(firmware_version):
-            logging.info('Sending firmware update for ' + str(flavor) + ' from ' + str(firmware_version) + ' to ' + str(
-                latest) + '.', extra=log_stat)
+            # logging.info('Sending firmware update for ' + str(flavor) + ' from ' + str(firmware_version) + ' to ' + str(
+            #     latest) + '.', extra=log_stat)
             print(log_stat)
-            print(self.client_address[0])
-            cell_ota_success_flag = 1
+            print("ota flag = 1")
+            save_ota_done(1)
+
+            print("ip?", self.client_address[0])
             self.buildStreamResponse(flavor, '')
-            save_ota_done(cell_ota_success_flag)
+
             return
         else:
             logging.debug('No update available', extra=log_stat)
