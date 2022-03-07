@@ -26,25 +26,41 @@ import logging
 import ssl
 import http.server
 from tkinter import filedialog
+from cell_on_off_control import Scanning
 #
 # FIRMWARE_DIRECTORY = os.environ['HOME'] + os.sep + "esp32"
 # print(FIRMWARE_DIRECTORY)
 
+DIRECTORY = ''
+OTA_flag = 0
 
+
+def save_ota_done(flag):
+    global OTA_flag
+    OTA_flag = flag
+    print("ota flag", OTA_flag)
+
+
+def cb_ota_flag():
+    global OTA_flag
+    print("cb = ", OTA_flag)
+    return OTA_flag
 
 
 class HttpHandler(http.server.BaseHTTPRequestHandler):
-    cell_cnt = 0
+    global DIRECTORY
+    cell_ota_success_flag = 0
 
     def getLatestFirmwareVersion(self, flavor):
-        for firmware in os.listdir(FIRMWARE_DIRECTORY):
+        print("$%%%%%%", flavor, DIRECTORY)
+        for firmware in os.listdir(DIRECTORY):
             if firmware.startswith(flavor):
                 # print("@@@@@@@@", firmware[firmware.index("-") +1:firmware.index('.bin')])
                 return '1.0'
         return -1
 
     def validRequest(self, flavor):
-        return glob.glob(FIRMWARE_DIRECTORY + os.sep + flavor + '*') and 'x-ESP8266-version' in self.headers
+        return glob.glob(DIRECTORY + os.sep + flavor + '*') and 'x-ESP8266-version' in self.headers
 
     def buildHtmlResponse(self, status):
         self.send_response(status)
@@ -52,7 +68,7 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def buildStreamResponse(self, flavor, latest):
-        filename = FIRMWARE_DIRECTORY + os.sep + flavor
+        filename = DIRECTORY + os.sep + flavor
         self.send_response(200)
         self.send_header('Content-type', 'application/octet-stream')
         self.send_header('Content-Disposition', 'attachment; filename=' + filename)
@@ -66,7 +82,7 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         log_stat = {'ip': self.client_address[0]}
         flavor = self.path.rsplit('/', 1)[-1]
 
-        print(glob.glob(FIRMWARE_DIRECTORY + os.sep + flavor + '*'))
+        print(glob.glob(DIRECTORY + os.sep + flavor + '*'))
 
         # if not self.validRequest(flavor):
         #     logging.error('Invalid request', extra = log_stat)
@@ -81,9 +97,11 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         if float(latest) > float(firmware_version):
             logging.info('Sending firmware update for ' + str(flavor) + ' from ' + str(firmware_version) + ' to ' + str(
                 latest) + '.', extra=log_stat)
+            print(log_stat)
+            print(self.client_address[0])
+            cell_ota_success_flag = 1
             self.buildStreamResponse(flavor, '')
-            self.cell_cnt = self.cell_cnt + 1
-            # print("Cell count = ", self.cell_cnt)
+            save_ota_done(cell_ota_success_flag)
             return
         else:
             logging.debug('No update available', extra=log_stat)
@@ -102,25 +120,52 @@ def parseArgs():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def ota_server_open(FIRMWARE_DIRECTORY):
+    global DIRECTORY
+    DIRECTORY = FIRMWARE_DIRECTORY
+
     args = parseArgs()
+    #
+    # if args.dir:
+    #     FIRMWARE_DIRECTORY = args.dir
 
-    if args.dir:
-        FIRMWARE_DIRECTORY = args.dir
+    # logging.basicConfig(format='%(asctime)-15s %(levelname)s %(ip)s --- %(message)s', level=args.log)
 
-    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(ip)s --- %(message)s', level=args.log)
-
-    FIRMWARE_DIRECTORY = filedialog.askdirectory()
-    print(FIRMWARE_DIRECTORY)
+    # FIRMWARE_DIRECTORY = filedialog.askdirectory()
+    # FIRMWARE_DIRECTORY = "/Users/jaeuklee/workspace/ESP32_LOCAL_OTA_SERVER/2.2.5"
+    # print("123", FIRMWARE_DIRECTORY)
 
     try:
         server = http.server.HTTPServer(('', args.port), HttpHandler)
         if args.cert:
             server.socket = ssl.wrap_socket(server.socket, certfile=args.cert, server_side=True)
 
-        print('Started httpserver on port ' + str(args.port) + ', firmware directory: ' + FIRMWARE_DIRECTORY)
+        print('Started httpserver on port ' + str(args.port) + ', firmware directory: ' + DIRECTORY)
         server.serve_forever()
 
     except KeyboardInterrupt:
         print('Shutting down httpserver')
         server.socket.close()
+
+# if __name__ == '__main__':
+#     args = parseArgs()
+#
+#     if args.dir:
+#         FIRMWARE_DIRECTORY = args.dir
+#
+#     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(ip)s --- %(message)s', level=args.log)
+#
+#     FIRMWARE_DIRECTORY = filedialog.askdirectory()
+#     print(FIRMWARE_DIRECTORY)
+#
+#     try:
+#         server = http.server.HTTPServer(('', args.port), HttpHandler)
+#         if args.cert:
+#             server.socket = ssl.wrap_socket(server.socket, certfile=args.cert, server_side=True)
+#
+#         print('Started httpserver on port ' + str(args.port) + ', firmware directory: ' + FIRMWARE_DIRECTORY)
+#         server.serve_forever()
+#
+#     except KeyboardInterrupt:
+#         print('Shutting down httpserver')
+#         server.socket.close()
