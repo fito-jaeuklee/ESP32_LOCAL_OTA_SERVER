@@ -38,7 +38,7 @@ OTA_flag = 0
 def save_ota_done(flag):
     global OTA_flag
     OTA_flag = flag
-    print("ota flag", OTA_flag)
+    # print("ota flag", OTA_flag)
 
 
 def cb_ota_flag():
@@ -52,7 +52,7 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
     cell_ota_success_flag = 0
 
     def getLatestFirmwareVersion(self, flavor):
-        print("$%%%%%%", flavor, DIRECTORY)
+        # print("$%%%%%%", flavor, DIRECTORY)
         for firmware in os.listdir(DIRECTORY):
             if firmware.startswith(flavor):
                 # print("@@@@@@@@", firmware[firmware.index("-") +1:firmware.index('.bin')])
@@ -82,26 +82,26 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         log_stat = {'ip': self.client_address[0]}
         flavor = self.path.rsplit('/', 1)[-1]
 
-        print(glob.glob(DIRECTORY + os.sep + flavor + '*'))
+        # print(glob.glob(DIRECTORY + os.sep + flavor + '*'))
 
         # if not self.validRequest(flavor):
         #     logging.error('Invalid request', extra = log_stat)
         #     self.buildHtmlResponse(400)
         #     return
 
-        print("flavor = ", flavor)
+        # print("flavor = ", flavor)
 
         latest = self.getLatestFirmwareVersion(flavor)
         firmware_version = 0.0
-        print(latest, firmware_version)
+        # print(latest, firmware_version)
         if float(latest) > float(firmware_version):
             # logging.info('Sending firmware update for ' + str(flavor) + ' from ' + str(firmware_version) + ' to ' + str(
             #     latest) + '.', extra=log_stat)
-            print(log_stat)
-            print("ota flag = 1")
+            # print(log_stat)
+            # print("ota flag = 1")
             save_ota_done(1)
 
-            print("ip?", self.client_address[0])
+            # print("ip?", self.client_address[0])
             self.buildStreamResponse(flavor, '')
 
             return

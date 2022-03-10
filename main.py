@@ -18,7 +18,7 @@ def check_wifi_ssid_ip_setting():
                 stdout=subprocess.PIPE)
             out, err = process.communicate()
             process.wait()
-            print(out)
+            # print(out)
             if "OHCOACH" in str(out):
                 print("SSID OK")
             else:
@@ -28,7 +28,7 @@ def check_wifi_ssid_ip_setting():
             process2 = subprocess.Popen(['ipconfig'], stdout=subprocess.PIPE)
             out2, err2 = process2.communicate()
             process2.wait()
-            print(out2)
+            # print(out2)
 
             if "192.168.1.254" in str(out2):
                 print("IP set to 192.168.1.254")
@@ -42,7 +42,7 @@ def check_wifi_ssid_ip_setting():
                 stdout=subprocess.PIPE)
             out, err = process.communicate()
             process.wait()
-            print(out)
+            # print(out)
             if "OHCOACH" in str(out):
                 print("SSID OK")
             else:
@@ -52,7 +52,7 @@ def check_wifi_ssid_ip_setting():
             process2 = subprocess.Popen(['ifconfig'], stdout=subprocess.PIPE)
             out2, err2 = process2.communicate()
             process2.wait()
-            print(out2)
+            # print(out2)
 
             if "192.168.1.254" in str(out2):
                 print("IP set to 192.168.1.254")
