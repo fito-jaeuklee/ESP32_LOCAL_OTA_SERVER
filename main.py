@@ -73,7 +73,12 @@ def cell_entered_ota():
         cell_port = cell_ctr.main(i)
         print(cell_port)
         time.sleep(30)
-        print("cell number / ota flag = ", i, ota.OTA_flag)
+        # print("cell number / ota flag = ", i, ota.OTA_flag)
+
+        if ota.OTA_flag == 1:
+            print("Cell number %d update SUCCESS !" % i)
+        else:
+            print("Cell number %d update FAIL !" % i)
 
         ota.save_ota_done(0)
 
