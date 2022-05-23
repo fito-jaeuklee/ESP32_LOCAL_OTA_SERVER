@@ -68,7 +68,9 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def buildStreamResponse(self, flavor, latest):
+
         filename = DIRECTORY + os.sep + flavor
+        print("file size = ", os.path.getsize(filename))
         self.send_response(200)
         self.send_header('Content-type', 'application/octet-stream')
         self.send_header('Content-Disposition', 'attachment; filename=' + filename)
@@ -76,6 +78,7 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
         self.send_header('x-MD5', hashlib.md5(open(filename, 'rb').read()).hexdigest())
         self.end_headers()
         with open(filename, 'rb') as binary:
+            # print(binary.read())
             self.wfile.write(binary.read())
 
     def do_GET(self):

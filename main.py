@@ -70,17 +70,20 @@ def cell_entered_ota():
     for i in range(1, 37):
         cell_ctr = cell_on_off.Scanning()
         print("Start cell %d OTA update !" % i)
-        cell_port = cell_ctr.main(i)
-        print(cell_port)
-        time.sleep(30)
-        # print("cell number / ota flag = ", i, ota.OTA_flag)
+        try:
+            cell_port = cell_ctr.main(i)
+            print(cell_port)
+            time.sleep(30)
+            # print("cell number / ota flag = ", i, ota.OTA_flag)
 
-        if ota.OTA_flag == 1:
-            print("Cell number %d update SUCCESS !" % i)
-        else:
-            print("Cell number %d update FAIL !" % i)
+            if ota.OTA_flag == 1:
+                print("Cell number %d update SUCCESS !" % i)
+            else:
+                print("Cell number %d update FAIL !" % i)
 
-        ota.save_ota_done(0)
+            ota.save_ota_done(0)
+        except:
+            pass
 
 
 # TODO:
@@ -91,8 +94,8 @@ if __name__ == '__main__':
         program_directory = os.path.dirname(os.path.abspath(sys.executable))
     else:
         program_directory = os.path.dirname(os.path.abspath(__file__))
-    # path = filedialog.askdirectory()
-    path = program_directory
+    path = filedialog.askdirectory()
+    # path = program_directory
     print(path)
     ota_thread = threading.Thread(target=ota.ota_server_open, args=[path])
 
